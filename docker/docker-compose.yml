@@ -3,5 +3,7 @@ services:
   bot:
     container_name: Bubbles
     image: 'git.toast-server.net/toast/bubbles:main'
+    volumes:
+      - ../tokens.json:/home/bubbles/tokens.json:ro
     restart: unless-stopped
     network_mode: host

@@ -10,7 +10,6 @@ RUN go build -v -trimpath ./
 FROM alpine:latest AS runner
 
 WORKDIR /home/bubbles
-COPY tokens.json .
 COPY --from=builder /bubbles/bot ./
 CMD ["./bot"]
 
