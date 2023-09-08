@@ -1,4 +1,4 @@
 *.json
 *.log
 # Exclude compiled binary
-./bot
+bot
