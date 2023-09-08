@@ -13,7 +13,6 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
-	"github.com/disgoorg/json"
 	"github.com/disgoorg/log"
 )
 
@@ -30,12 +29,20 @@ var (
 func main() {
 	client, err := disgo.New(loaders.LoadBotToken("tokens.json"),
 		bot.WithGatewayConfigOpts(gateway.WithIntents(BotIntents)),
+		/* bot.WithHTTPServerConfigOpts("50e0cd86cf9f69644afc22050e8f6fec41691e958cf4156d1b749634ab0e785e",
+			httpserver.WithAddress(":8080"),
+			httpserver.WithURL("/api/bot"),
+		), */
 
 		bot.WithEventListenerFunc(botEvents.Ready),
+		bot.WithEventListeners(&events.ListenerAdapter{OnApplicationCommandInteraction: botEvents.ListenForCommand}),
 	)
 	if err != nil {
 		panic(err)
 	}
+	/* if err = client.OpenHTTPServer(); err != nil {
+		panic(err)
+	} */
 	if err = client.OpenGateway(context.TODO()); err != nil {
 		panic(err)
 	}
@@ -44,38 +51,7 @@ func main() {
 		log.Errorf("failed to set global commands: %v", err)
 	}
 
-	listenForInterrupt()
-}
-
-func listenForInterrupt() {
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-s
-}
-
-func listenForCommand(e *events.ApplicationCommandInteractionCreate) {
-	switch name := e.Data.CommandName(); name {
-	case "ping":
-		updateInter(e, discord.MessageUpdate{
-			Content: json.Ptr("Pong!"),
-		})
-	}
-}
-
-func updateInter(e *events.ApplicationCommandInteractionCreate, messageUpdate discord.MessageUpdate) {
-	if _, err := e.Client().Rest().UpdateInteractionResponse(e.ApplicationID(), e.Token(), messageUpdate); err != nil {
-		log.Errorf("failed to update interaction response: %v", err)
-	}
-}
-
-func updateErr(e *events.ApplicationCommandInteractionCreate, message string) {
-	updateInter(e, discord.MessageUpdate{
-		Embeds: &[]discord.Embed{
-			{
-				Title:       "There was an attempt...",
-				Description: message,
-				Color:       0x560000,
-			},
-		},
-	})
 }
