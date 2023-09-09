@@ -14,7 +14,6 @@ import (
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/log"
 	"github.com/dustin/go-humanize"
-	"github.com/klauspost/cpuid/v2"
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/zcalusic/sysinfo"
@@ -54,7 +53,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		if err := e.CreateMessage(discord.MessageCreate{
 			Embeds: []discord.Embed{
 				{
-					Description: fmt.Sprintf("**CPU:** %v\n**OS:** %s\n**Arch:** %v", cpuid.CPU.BrandName, si.OS.Name, runtime.GOARCH),
+					Description: fmt.Sprintf("**OS:** %s\n**Arch:** %v", si.OS.Name, runtime.GOARCH),
 					Fields: []discord.EmbedField{
 						{
 							Name:   "CPU Usage",

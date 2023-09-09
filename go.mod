@@ -14,7 +14,6 @@ require (
 	github.com/disgoorg/snowflake/v2 v2.0.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.5
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
