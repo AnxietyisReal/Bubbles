@@ -6,11 +6,11 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 	commandList = []discord.ApplicationCommandCreate{
 		discord.SlashCommandCreate{
 			Name:        "ping",
-			Description: "Check latency to Discord API from bot",
+			Description: "Returns the Discord API latency",
 		},
 		discord.SlashCommandCreate{
 			Name:        "stats",
-			Description: "Returns bot statistics like uptime and etc",
+			Description: "Returns host statistics like system usage, etc",
 		},
 		discord.SlashCommandCreate{
 			Name:        "mp",
