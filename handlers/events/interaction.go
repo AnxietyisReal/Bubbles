@@ -12,7 +12,7 @@ import (
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
-var mainEmbedColor = 0xec9aa6
+var mainEmbedColor = 0xf8add8
 
 func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 	fmt.Printf("Command requested by %s\n", e.Member().User.Username)
