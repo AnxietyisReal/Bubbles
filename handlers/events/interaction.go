@@ -166,25 +166,6 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 	}
 }
 
-func UpdateInter(e *events.ApplicationCommandInteractionCreate, messageUpdate discord.MessageUpdate) {
-	fmt.Print(e.Token())
-	if _, err := e.Client().Rest().UpdateInteractionResponse(e.ApplicationID(), e.Token(), messageUpdate); err != nil {
-		log.Errorf("failed to update interaction response: %v", err)
-	}
-}
-
 func DumpErrToConsole(err error) {
 	log.Errorf("failed to send interaction response: %v", err.Error())
-}
-
-func UpdateErr(e *events.ApplicationCommandInteractionCreate, message string) {
-	UpdateInter(e, discord.MessageUpdate{
-		Embeds: &[]discord.Embed{
-			{
-				Title:       "There was an attempt...",
-				Description: message,
-				Color:       0x560000,
-			},
-		},
-	})
 }
