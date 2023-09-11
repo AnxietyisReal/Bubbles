@@ -17,5 +17,15 @@
   },
   "constraints": {
     "go": "1.21"
-  }
+  },
+  "pruneStaleBranches": true,
+  "pruneBranchAfterAutomerge": true,
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "automergeBranchPrefix": "renovate/",
+  "automergeSchedule": [
+    "after 5am every day",
+    "before 6pm every day"
+  ]
 }
