@@ -14,5 +14,8 @@
     "commitMessageSuffix": "[SECURITY]",
     "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
     "prCreation": "immediate"
+  },
+  "constraints": {
+    "go": "1.21"
   }
 }
