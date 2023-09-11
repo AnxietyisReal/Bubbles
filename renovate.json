@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
-  ]
+  ],
+  "commitBody": "PR created by Renovate Bot.",
+  "timezone": "Australia/Sydney",
+  "vulnerabilityAlerts": {
+    "groupName": "renovate-security",
+    "schedule": ["before 11pm every day"],
+    "dependencyDashboardApproval": false,
+    "minimumReleaseAge": "1h",
+    "rangeStrategy": "update-lockfile",
+    "commitMessageSuffix": "[SECURITY]",
+    "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
+    "prCreation": "immediate"
+  }
 }
