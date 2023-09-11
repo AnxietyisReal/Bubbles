@@ -1,7 +1,7 @@
 package main
 
 import (
-	botEvents "bubbles/bot/handlers/events"
+	botEvents "bubbles/bot/events"
 	"bubbles/bot/loaders"
 	"context"
 	"os"
@@ -15,11 +15,10 @@ import (
 	"github.com/disgoorg/log"
 )
 
-var BotIntents = gateway.IntentGuilds | gateway.IntentGuildWebhooks
-
 func main() {
-	client, err := disgo.New(loaders.LoadBotToken("tokens.json"),
-		bot.WithGatewayConfigOpts(gateway.WithIntents(BotIntents)),
+	loaders.ConnectToDatabase(loaders.TokenLoader("database"))
+	client, err := disgo.New(loaders.TokenLoader("bot"),
+		bot.WithGatewayConfigOpts(gateway.WithIntents(gateway.IntentGuilds)),
 
 		bot.WithEventListenerFunc(botEvents.Ready),
 		bot.WithEventListeners(&events.ListenerAdapter{OnApplicationCommandInteraction: botEvents.ListenForCommand}),

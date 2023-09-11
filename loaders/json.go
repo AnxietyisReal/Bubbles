@@ -7,8 +7,14 @@ import (
 )
 
 type Tokens struct {
-	Bot string `json:"bot"`
+	Bot      string `json:"bot"`
+	Database string `json:"database"`
 }
+
+var (
+	tokens       Tokens
+	invalidToken = "Token not found; Please setup a \"tokens.json\" file in root directory."
+)
 
 func LoadJSON(path string, v interface{}) error {
 	var file, err = os.Open(path)
@@ -25,11 +31,20 @@ func LoadJSON(path string, v interface{}) error {
 	return err
 }
 
-func LoadBotToken(path string) string {
-	var tokens Tokens
-	err := LoadJSON(path, &tokens)
-	if err != nil {
-		return "Bot token not found; Please create a \"tokens.json\" file in root directory and insert bot token in it."
+func TokenLoader(token string) string {
+	switch token {
+	case "bot":
+		err := LoadJSON("tokens.json", &tokens)
+		if err != nil {
+			return invalidToken
+		}
+		return tokens.Bot
+	case "database":
+		err := LoadJSON("tokens.json", &tokens)
+		if err != nil {
+			return invalidToken
+		}
+		return tokens.Database
 	}
-	return tokens.Bot
+	return invalidToken
 }

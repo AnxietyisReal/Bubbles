@@ -1,4 +1,4 @@
-FROM golang:1.21.1-alpine3.17 AS builder
+FROM golang:1.21-alpine3.18 AS builder
 
 WORKDIR /bubbles
 COPY go.mod go.sum ./
