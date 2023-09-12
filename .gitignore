@@ -1,9 +1,7 @@
 *.json
 *.log
-database
 # Exclude compiled binary
 bot
-
 # Exclude incomplete monorepo (or something)
 dashboard/
 docker/web
