@@ -8,4 +8,4 @@ bot
 dashboard/
 docker/web
 docker/dockerr-compose.yml
-go.work
+go.work*
