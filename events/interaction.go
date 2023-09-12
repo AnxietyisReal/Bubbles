@@ -4,7 +4,6 @@ import (
 	// "bubbles/bot/loaders"
 	// "bubbles/bot/structures"
 	// "encoding/json"
-	"bubbles/bot/loaders"
 	"fmt"
 
 	// "io"
@@ -45,11 +44,10 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		memInfo, _ := mem.VirtualMemory()
 		var si sysinfo.SysInfo
 		si.GetSysInfo()
-		uptime := loaders.BotUptimeTracker()
 		if err := e.CreateMessage(discord.MessageCreate{
 			Embeds: []discord.Embed{
 				{
-					Description: fmt.Sprintf("**OS:** %s\n**Arch:** %v\n**Uptime:** %v", si.OS.Name, runtime.GOARCH, time.Since(uptime)),
+					Description: fmt.Sprintf("**OS:** %s\n**Arch:** %v", si.OS.Name, runtime.GOARCH),
 					Fields: []discord.EmbedField{
 						{
 							Name:   "CPU Usage",

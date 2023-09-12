@@ -13,7 +13,7 @@ fi
 
 echo "Building image $user/$repo:$tag from $dir"
 
-docker build -q -t git.toast-server.net/$user/$repo:$tag -f $dir .
+docker build -t git.toast-server.net/$user/$repo:$tag -f $dir .
 echo "Image has been built"
 
 read -p "Do you want to push the image to the registry? (y/n) " -n 1 -r

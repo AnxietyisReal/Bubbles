@@ -5,5 +5,14 @@ services:
     image: 'git.toast-server.net/toast/bubbles:main'
     volumes:
       - ../tokens.json:/home/bubbles/tokens.json:ro
+    depends_on:
+      - db
+    restart: unless-stopped
+    network_mode: host
+  db:
+    container_name: Bubbles-DB
+    image: 'git.toast-server.net/toast/bubbles:mongo-7'
+    expose:
+      - 8800:8800
     restart: unless-stopped
     network_mode: host

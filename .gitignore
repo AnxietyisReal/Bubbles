@@ -1,4 +1,5 @@
 *.json
 *.log
+database
 # Exclude compiled binary
 bot
