@@ -3,3 +3,9 @@
 database
 # Exclude compiled binary
 bot
+
+# Exclude incomplete monorepo (or something)
+dashboard/
+docker/web
+docker/dockerr-compose.yml
+go.work
