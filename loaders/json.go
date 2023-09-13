@@ -7,8 +7,9 @@ import (
 )
 
 type Tokens struct {
-	Bot      string `json:"bot"`
-	Database string `json:"database"`
+	Bot          string `json:"bot"`
+	BotPublicKey string `json:"botPublicKey"`
+	Database     string `json:"database"`
 }
 
 var (
@@ -45,6 +46,12 @@ func TokenLoader(token string) string {
 			return invalidToken
 		}
 		return tokens.Database
+	case "botPublicKey":
+		err := LoadJSON("tokens.json", &tokens)
+		if err != nil {
+			return invalidToken
+		}
+		return tokens.BotPublicKey
 	}
 	return invalidToken
 }

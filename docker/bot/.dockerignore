@@ -2,3 +2,5 @@ tokens.json
 renovate.json
 .gitignore
 buildContainer.sh
+go.work
+go.work.sum
