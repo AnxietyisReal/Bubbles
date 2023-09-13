@@ -11,6 +11,7 @@ FROM alpine:latest AS runner
 
 WORKDIR /home/bubbles
 COPY --from=builder /bubbles/bot ./
+EXPOSE 8080
 CMD ["./bot"]
 
 
