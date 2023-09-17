@@ -8,6 +8,7 @@ import (
 
 type Tokens struct {
 	Bot          string `json:"bot"`
+	Webhook      string `json:"webhook"`
 	BotPublicKey string `json:"botPublicKey"`
 	Database     string `json:"database"`
 }
@@ -33,24 +34,18 @@ func LoadJSON(path string, v interface{}) error {
 }
 
 func TokenLoader(token string) string {
+	err := LoadJSON("tokens.json", &tokens)
+	if err != nil {
+		return invalidToken
+	}
 	switch token {
 	case "bot":
-		err := LoadJSON("tokens.json", &tokens)
-		if err != nil {
-			return invalidToken
-		}
 		return tokens.Bot
+	case "webhook":
+		return tokens.Webhook
 	case "database":
-		err := LoadJSON("tokens.json", &tokens)
-		if err != nil {
-			return invalidToken
-		}
 		return tokens.Database
 	case "botPublicKey":
-		err := LoadJSON("tokens.json", &tokens)
-		if err != nil {
-			return invalidToken
-		}
 		return tokens.BotPublicKey
 	}
 	return invalidToken

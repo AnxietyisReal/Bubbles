@@ -10,9 +10,11 @@ import (
 
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
+	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/httpserver"
 	"github.com/disgoorg/log"
+	"github.com/disgoorg/snowflake/v2"
 )
 
 func main() {
@@ -38,6 +40,9 @@ func main() {
 
 	fmt.Printf("Client ready!\n")
 	fmt.Printf("Running Disgo %v\n", disgo.Version)
+	client.Rest().CreateWebhookMessage(snowflake.ID(1152949381474029679), loaders.TokenLoader("webhook"), discord.WebhookMessageCreate{
+		Content: "Container has been restarted.",
+	}, true, 0)
 
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
