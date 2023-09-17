@@ -1,14 +1,14 @@
 package botEvents
 
 import (
-	// "bubbles/bot/loaders"
-	// "bubbles/bot/structures"
-	// "encoding/json"
+	"bubbles/bot/loaders"
+	"bubbles/bot/structures"
+	"encoding/json"
 	"fmt"
-
-	// "io"
-	// "net/http"
+	"io"
+	"net/http"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/disgoorg/disgo"
@@ -47,7 +47,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		if err := e.CreateMessage(discord.MessageCreate{
 			Embeds: []discord.Embed{
 				{
-					Description: fmt.Sprintf("**OS:** %s\n**Arch:** %v", si.OS.Name, runtime.GOARCH),
+					Description: fmt.Sprintf("**OS:** %s", si.OS.Name),
 					Fields: []discord.EmbedField{
 						{
 							Name:   "CPU Usage",
@@ -66,7 +66,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 						},
 						{
 							Name:   "Version",
-							Value:  fmt.Sprintf("Disgo %v\n%v", disgo.Version, runtime.Version()),
+							Value:  fmt.Sprintf("Disgo %v\nGo %v", disgo.Version, strings.TrimPrefix(runtime.Version(), "go")),
 							Inline: &TRUE,
 						},
 						{
@@ -82,135 +82,121 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			DumpErrToConsole(err)
 		}
 		break
-		/* 	case "stats":
-		   		httpClient := &http.Client{Timeout: time.Second * 15}
+	case "stats":
+		httpClient := &http.Client{Timeout: time.Second * 15}
 
-		   		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
-		   		if apiEndpoint == "" {
-		   			DumpErrToInteraction(e, fmt.Errorf("URL is not set"))
-		   		}
+		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
+		if apiEndpoint == "" {
+			DumpErrToInteraction(e, fmt.Errorf("URL is not set"))
+		}
 
-		   		requ, err := http.NewRequest("GET", apiEndpoint, nil)
-		   		if err != nil {
-		   			log.Errorf("failed to parse the API data: %v", err.Error())
-		   		}
-		   		requ.Header.Add("User-Agent", fmt.Sprintf("Bubbles/%v", runtime.Version()))
-		   		r, err := httpClient.Do(requ)
-		   		if err != nil {
-		   			log.Error(err.Error())
-		   		}
-		   		defer r.Body.Close()
-		   		body, _ := io.ReadAll(r.Body)
+		requ, err := http.NewRequest("GET", apiEndpoint, nil)
+		if err != nil {
+			log.Errorf("failed to parse the API data: %v", err.Error())
+		}
+		requ.Header.Add("User-Agent", fmt.Sprintf("Bubbles/Go %v", strings.TrimPrefix(runtime.Version(), "go")))
+		r, err := httpClient.Do(requ)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		defer r.Body.Close()
+		body, _ := io.ReadAll(r.Body)
 
-		   		var res structures.FSAPIRawDataResponse
-		   		json.Unmarshal(body, &res)
+		var res structures.FSAPIRawDataResponse
+		json.Unmarshal(body, &res)
 
-		   		if res.Server.Name == "" ||
-		   			res.Server.MapName == "" ||
-		   			res.Server.Version == "" {
-		   			emptyField := "····"
-		   			res.Server.Name = "Server is offline"
-		   			res.Server.MapName += emptyField
-		   			res.Server.Version += emptyField
-		   		}
+		if res.Server.Name == "" ||
+			res.Server.MapName == "" ||
+			res.Server.Version == "" {
+			emptyField := "····"
+			res.Server.Name = "Server is offline"
+			res.Server.MapName += emptyField
+			res.Server.Version += emptyField
+		}
 
-		   		playerArray := string("")
-		   		for _, player := range res.Slots.Players {
-		   			if playerArray == "" && res.Slots.Used < 1 {
-		   				playerArray = "*No players online*"
-		   			}
-		   			if player.IsAdmin {
-		   				playerArray = fmt.Sprintf("%v\n%v **[ADMIN]**", playerArray, player.Name)
-		   			} else {
-		   				playerArray = fmt.Sprintf("%v\n%v", playerArray, player.Name)
-		   			}
-		   		}
+		playerArray := string("")
+		for _, player := range res.Slots.Players {
+			if playerArray == "" && res.Slots.Used < 1 {
+				playerArray = "*No players online*"
+			}
+			if player.IsAdmin {
+				playerArray = fmt.Sprintf("%v\n%v **[ADMIN]**", playerArray, player.Name)
+			} else {
+				playerArray = fmt.Sprintf("%v\n%v", playerArray, player.Name)
+			}
+		}
 
-		   		if err := e.CreateMessage(discord.MessageCreate{
-		   			Embeds: []discord.Embed{
-		   				{
-		   					Author: &discord.EmbedAuthor{
-		   						Name: fmt.Sprint(res.Server.Name),
-		   					},
-		   					Fields: []discord.EmbedField{
-		   						{
-		   							Name:   "Version",
-		   							Value:  fmt.Sprintf("%v", res.Server.Version),
-		   							Inline: &TRUE,
-		   						},
-		   						{
-		   							Name:   "Map",
-		   							Value:  fmt.Sprintf("%v", res.Server.MapName),
-		   							Inline: &TRUE,
-		   						},
-		   						{
-		   							Name:  "Players",
-		   							Value: fmt.Sprintf("%v", playerArray),
-		   						},
-		   					},
-		   					Footer: &discord.EmbedFooter{
-		   						Text: fmt.Sprintf("%v/%v", res.Slots.Used, res.Slots.Capacity),
-		   					},
-		   					Color: mainEmbedColor,
-		   				},
-		   			},
-		   		}); err != nil {
-		   			DumpErrToConsole(err)
-		   		}
-		   		break
-		   	case "manage-server":
-		   		switch subCommand := e.Data.CommandName(); subCommand {
-		   		case "link":
-		   			if err := e.CreateMessage(discord.MessageCreate{
-		   				Embeds: []discord.Embed{
-		   					{
-		   						Title:       "Linking the server",
-		   						Description: "This feature is not yet implemented",
-		   						Color:       mainEmbedColor,
-		   					},
-		   				},
-		   			}); err != nil {
-		   				DumpErrToConsole(err)
-		   			}
-		   			break
-		   		case "unlink":
-		   			if err := e.CreateMessage(discord.MessageCreate{
-		   				Embeds: []discord.Embed{
-		   					{
-		   						Title:       "Unlinking the server",
-		   						Description: "This feature is not yet implemented",
-		   						Color:       mainEmbedColor,
-		   					},
-		   				},
-		   			}); err != nil {
-		   				DumpErrToConsole(err)
-		   			}
-		   			break
-		   		case "visibility":
-		   			if err := e.CreateMessage(discord.MessageCreate{
-		   				Embeds: []discord.Embed{
-		   					{
-		   						Title:       "Toggling the server visibility",
-		   						Description: "This feature is not yet implemented",
-		   						Color:       mainEmbedColor,
-		   					},
-		   				},
-		   			}); err != nil {
-		   				DumpErrToConsole(err)
-		   			}
-		   			break
-		   		} */
+		if err := e.CreateMessage(discord.MessageCreate{
+			Embeds: []discord.Embed{
+				{
+					Author: &discord.EmbedAuthor{
+						Name: fmt.Sprint(res.Server.Name),
+					},
+					Fields: []discord.EmbedField{
+						{
+							Name:   "Version",
+							Value:  fmt.Sprintf("%v", res.Server.Version),
+							Inline: &TRUE,
+						},
+						{
+							Name:   "Map",
+							Value:  fmt.Sprintf("%v", res.Server.MapName),
+							Inline: &TRUE,
+						},
+						{
+							Name:  "Players",
+							Value: fmt.Sprintf("%v", playerArray),
+						},
+					},
+					Footer: &discord.EmbedFooter{
+						Text: fmt.Sprintf("%v/%v", res.Slots.Used, res.Slots.Capacity),
+					},
+					Color: mainEmbedColor,
+				},
+			},
+		}); err != nil {
+			DumpErrToConsole(err)
+		}
+		break
+	case "link":
+		str, _ := e.SlashCommandInteractionData().OptString("panel-url")
+		if doc := loaders.CreateServerSettings(*e.GuildID(), str); doc != nil {
+			log.Infof("Created server settings for %v", *e.GuildID())
+			e.CreateMessage(discord.MessageCreate{
+				Content: "I have saved the current URL for this server.\nYou can now use the `/stats` command.",
+			})
+		} else {
+			log.Infof("Server settings already exist for %v", *e.GuildID())
+			e.CreateMessage(discord.MessageCreate{
+				Content: "I already have an existing URL stored for this server. If you want to change them, please use the `unlink` command first.",
+			})
+		}
+		break
+	case "unlink":
+		if doc := loaders.DeleteServerSettings(*e.GuildID()); doc != nil {
+			log.Infof("Deleted server settings for %v", *e.GuildID())
+			e.CreateMessage(discord.MessageCreate{
+				Content: "I have deleted the URL for this server.",
+			})
+		} else {
+			log.Infof("Server settings do not exist for %v", *e.GuildID())
+			e.CreateMessage(discord.MessageCreate{
+				Content: "I do not have an existing URL stored for this server.",
+			})
+		}
 	}
 }
 
-// autocomplete shit is broken, will continue later as this is preventing me from doing anything further.
-/* func ListenForAutocomplete(e *discord.AutocompleteInteractionData) {
-	e.Options = make(map[string]discord.AutocompleteOption)
-	switch name := e.CommandName; name {
+/* func AutocompleteListener(e *events.AutocompleteInteractionCreate) {
+	switch e.Data.CommandName {
 	case "stats":
-		e.Options["server"] = discord.AutocompleteOption{
-			Name:    "dd",
-			Focused: true,
+		if err := e.Result([]discord.AutocompleteChoice{
+			discord.AutocompleteChoiceString{
+				Name: "d",
+				Value: string("y"),
+			},
+		}); err != nil {
+			DumpErrToConsole(err)
 		}
 	}
 } */

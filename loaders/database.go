@@ -28,115 +28,27 @@ func ConnectToDatabase(uri string) {
 	}
 }
 
-func FindDoc(collection string, filter bson.D) []bson.M {
-	coll := client.Database(dbName).Collection(collection)
-	var results []bson.M
-	cur, err := coll.Find(context.TODO(), filter)
-	if err == mongo.ErrNoDocuments {
-		return nil
-	}
-	if err != nil {
-		log.Fatalf("Failed to find document: %v", err)
-	}
-	if err = cur.All(context.Background(), &results); err != nil {
-		log.Fatalf("Failed to decode document: %v", err)
-	}
-	return results
-}
-
-func InsertDoc(collection string, doc bson.D) *mongo.InsertOneResult {
-	coll := client.Database(dbName).Collection(collection)
-	result, err := coll.InsertOne(context.Background(), doc)
-	if err != nil {
-		log.Fatalf("Failed to insert document: %v", err)
-	}
-	return result
-}
-
-func InsertMultipleDocs(collection string, docs []interface{}) *mongo.InsertManyResult {
-	coll := client.Database(dbName).Collection(collection)
-	result, err := coll.InsertMany(context.Background(), docs)
-	if err != nil {
-		log.Fatalf("Failed to insert documents: %v", err)
-	}
-	return result
-}
-
-func UpdateDoc(collection string, filter bson.D, update bson.D) *mongo.UpdateResult {
-	coll := client.Database(dbName).Collection(collection)
-	result, err := coll.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		log.Fatalf("Failed to update document: %v", err)
-	}
-	return result
-}
-
-func UpdateMultipleDocs(collection string, filter bson.D, update bson.D) *mongo.UpdateResult {
-	coll := client.Database(dbName).Collection(collection)
-	result, err := coll.UpdateMany(context.Background(), filter, update)
-	if err != nil {
-		log.Fatalf("Failed to update documents: %v", err)
-	}
-	return result
-}
-
-func DeleteDoc(collection string, filter bson.D) *mongo.DeleteResult {
-	coll := client.Database(dbName).Collection(collection)
-	result, err := coll.DeleteOne(context.Background(), filter)
-	if err != nil {
-		log.Fatalf("Failed to delete document: %v", err)
-	}
-	return result
-}
-
-func DeleteMultipleDocs(collection string, filter bson.D) *mongo.DeleteResult {
-	coll := client.Database(dbName).Collection(collection)
-	result, err := coll.DeleteMany(context.Background(), filter)
-	if err != nil {
-		log.Fatalf("Failed to delete documents: %v", err)
-	}
-	return result
-}
-
-func FindOneAndUpdate(collection string, filter bson.D, update bson.D) *mongo.SingleResult {
-	coll := client.Database(dbName).Collection(collection)
-	result := coll.FindOneAndUpdate(context.Background(), filter, update)
-	return result
-}
-
-func FindOneAndDelete(collection string, filter bson.D) *mongo.SingleResult {
-	coll := client.Database(dbName).Collection(collection)
-	result := coll.FindOneAndDelete(context.Background(), filter)
-	return result
-}
-
-func FindOneAndReplace(collection string, filter bson.D, replacement bson.D) *mongo.SingleResult {
-	coll := client.Database(dbName).Collection(collection)
-	result := coll.FindOneAndReplace(context.Background(), filter, replacement)
-	return result
-}
-
-func CreateServerSettings(guildID snowflake.ID) *mongo.InsertOneResult {
+func CreateServerSettings(guildID snowflake.ID, settings string) *mongo.InsertOneResult {
 	coll := client.Database(dbName).Collection("serverSettings")
-	result, err := coll.InsertOne(context.Background(), bson.D{{Key: "_id", Value: guildID}})
+	result, err := coll.InsertOne(context.TODO(), bson.D{{Key: "_id", Value: guildID}, {Key: "server", Value: settings}})
 	if err != nil {
 		log.Fatalf("Failed to create server settings: %v", err)
 	}
 	return result
 }
 
-func UpdateServerSettings(guildID snowflake.ID, settings bson.D) *mongo.UpdateResult {
+/* func UpdateServerSettings(guildID snowflake.ID, settings bson.D) *mongo.UpdateResult {
 	coll := client.Database(dbName).Collection("serverSettings")
-	result, err := coll.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: guildID}}, bson.D{{Key: "$set", Value: settings}})
+	result, err := coll.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: guildID}}, bson.D{{Key: "$set", Value: bson.D{{Key: "linkedServers", Value: settings}}}})
 	if err != nil {
 		log.Fatalf("Failed to update server settings: %v", err)
 	}
 	return result
-}
+} */
 
 func DeleteServerSettings(guildID snowflake.ID) *mongo.DeleteResult {
 	coll := client.Database(dbName).Collection("serverSettings")
-	result, err := coll.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: guildID}})
+	result, err := coll.DeleteOne(context.Background(), ServerSettings{GuildID: guildID})
 	if err != nil {
 		log.Fatalf("Failed to delete server settings: %v", err)
 	}
@@ -146,24 +58,51 @@ func DeleteServerSettings(guildID snowflake.ID) *mongo.DeleteResult {
 func RetrieveFSServerURL(guildID snowflake.ID) string {
 	coll := client.Database(dbName).Collection("serverSettings")
 	var result bson.M
-	err := coll.FindOne(context.Background(), bson.D{{Key: "_id", Value: guildID}}).Decode(&result)
+	err := coll.FindOne(context.Background(), ServerSettings{GuildID: guildID}).Decode(&result)
 	if err != nil {
 		log.Fatalf("Failed to retrieve FS server URL: %v", err)
 	}
+	log.Print(result["panelURL"].(string))
 	return result["panelURL"].(string)
 }
 
 type ServerSettings struct {
+	GuildID snowflake.ID `bson:"_id"`
+	Server  FSServerURL  `bson:"server"`
+	// Server  []FSServerURL `bson:"server"`
+}
+
+/* type ServerSettings struct {
+	GuildID snowflake.ID           	 `bson:"_id"`
+	Server  map[string]FSServerURL{} `bson:"server"`
+} */
+//Q: Should it be map[string]FSServerURL or map[string]FSServerURL{} if I want numbers after "Server"? (e.g. server1, server2, server3)
+//A: It should be map[string]FSServerURL{}.
+//Q: It doesn't work. It says "expected ';', found '{'"
+//A: You need to use a map[string]FSServerURL{} instead of a map[string]FSServerURL.
+//Q: But I am already using it.
+//A: No, you are not. You are using a map[string]FSServerURL. You need to use a map[string]FSServerURL{}.
+//Q: YES I AM USING IT, STOP BEING MEAN TO ME!
+//A: NO, YOU ARE NOT USING IT. YOU ARE USING A map[string]FSServerURL. YOU NEED TO USE A map[string]FSServerURL{}.
+
+//Q: Create a struct for server object and re-use it on multiple objects inside same document
+//A: Yes, but it's not that simple. You need to use a map[string]struct{} instead of a struct{}.
+//Q: Why?
+//A: Because Go doesn't allow you to use the same struct{} on multiple objects inside the same document.
+
+type FSServerURL map[string]struct {
+	PanelURL string `bson:"_id"`
+}
+
+/* type ServerSettings struct {
 	GuildID       snowflake.ID     `bson:"_id"`
 	LinkedServers FSServers_Object `bson:"linkedServers"`
 }
 
 type FSServers_Object struct {
-	Servers FSServer_Schema `bson:"urls"`
+	Servers map[string]FSServer_Schema `bson:"servers"`
 }
 
 type FSServer_Schema struct {
 	PanelURL string `bson:"_id"`
-	IsPublic bool   `bson:"isPublic"`
-	// If guild admin/manager linked this server to the bot but not ready for public viewing, this can be toggled.
-}
+} */
