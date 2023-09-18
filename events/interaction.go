@@ -83,7 +83,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 		break
 	case "stats":
-		httpClient := &http.Client{Timeout: time.Second * 2}
+		httpClient := &http.Client{Timeout: time.Second * 10}
 		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
 
 		requ, err := http.NewRequest("GET", apiEndpoint, nil)
