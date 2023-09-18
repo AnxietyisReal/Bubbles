@@ -21,7 +21,10 @@ import (
 	"github.com/zcalusic/sysinfo"
 )
 
-var mainEmbedColor = 0xf8add8
+var (
+	mainEmbedColor = 0xf8add8
+	noPermText     = "You need to have a role with `Manage Server` permission to use this command."
+)
 
 func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 	// fmt.Printf("Command requested by %s\n", e.Member().User.Username)
@@ -155,6 +158,12 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 		break
 	case "link":
+		if !isGuildManager(e) {
+			e.CreateMessage(discord.MessageCreate{
+				Content: noPermText,
+			})
+			return
+		}
 		str, _ := e.SlashCommandInteractionData().OptString("panel-url")
 		doc := loaders.CreateSettings(*e.GuildID(), str)
 		if doc != nil {
@@ -170,6 +179,12 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 		break
 	case "unlink":
+		if !isGuildManager(e) {
+			e.CreateMessage(discord.MessageCreate{
+				Content: noPermText,
+			})
+			return
+		}
 		if doc := loaders.DeleteSettings(*e.GuildID()); doc != nil {
 			log.Infof("Deleted server settings for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
@@ -213,5 +228,14 @@ func DumpErrToInteraction(e *events.ApplicationCommandInteractionCreate, err err
 		},
 	}); err != nil {
 		DumpErrToConsole(err)
+	}
+}
+
+func isGuildManager(e *events.ApplicationCommandInteractionCreate) bool {
+	member := e.Member()
+	if member.Permissions.Has(discord.PermissionManageGuild) {
+		return true
+	} else {
+		return false
 	}
 }
