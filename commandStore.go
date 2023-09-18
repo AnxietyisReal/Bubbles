@@ -23,13 +23,13 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 			Name:         "stats",
 			Description:  "Returns the FS server information like players, etc",
 			DMPermission: &FALSE,
-			Options: []discord.ApplicationCommandOption{
+			/* Options: []discord.ApplicationCommandOption{
 				discord.ApplicationCommandOptionString{
 					Name:        "server",
 					Description: "Which FS server to get the stats for",
 					Required:    true,
 				},
-			},
+			}, */
 		},
 		discord.SlashCommandCreate{
 			Name:         "link",

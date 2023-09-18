@@ -84,11 +84,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		break
 	case "stats":
 		httpClient := &http.Client{Timeout: time.Second * 15}
-
 		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
-		if apiEndpoint == "" {
-			DumpErrToInteraction(e, fmt.Errorf("URL is not set"))
-		}
 
 		requ, err := http.NewRequest("GET", apiEndpoint, nil)
 		if err != nil {
@@ -160,20 +156,21 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		break
 	case "link":
 		str, _ := e.SlashCommandInteractionData().OptString("panel-url")
-		if doc := loaders.CreateServerSettings(*e.GuildID(), str); doc != nil {
+		doc := loaders.CreateSettings(*e.GuildID(), str)
+		if doc != nil {
 			log.Infof("Created server settings for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
-				Content: "I have saved the current URL for this server.\nYou can now use the `/stats` command.",
+				Content: "I have stored the URL for this server.",
 			})
 		} else {
 			log.Infof("Server settings already exist for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
-				Content: "I already have an existing URL stored for this server. If you want to change them, please use the `unlink` command first.",
+				Content: "I already have an existing URL stored for this server.",
 			})
 		}
 		break
 	case "unlink":
-		if doc := loaders.DeleteServerSettings(*e.GuildID()); doc != nil {
+		if doc := loaders.DeleteSettings(*e.GuildID()); doc != nil {
 			log.Infof("Deleted server settings for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
 				Content: "I have deleted the URL for this server.",

@@ -7,10 +7,13 @@ import (
 )
 
 type Tokens struct {
-	Bot          string `json:"bot"`
-	Webhook      string `json:"webhook"`
-	BotPublicKey string `json:"botPublicKey"`
-	Database     string `json:"database"`
+	DeployCommands bool   `json:"deployCommands"`
+	Bot            string `json:"bot"`
+	Webhook        string `json:"webhook"`
+	BotPublicKey   string `json:"botPublicKey"`
+	Database       string `json:"database"`
+	MongoUser      string `json:"mongoUser"`
+	MongoPass      string `json:"mongoPass"`
 }
 
 var (
@@ -43,10 +46,22 @@ func TokenLoader(token string) string {
 		return tokens.Bot
 	case "webhook":
 		return tokens.Webhook
-	case "database":
-		return tokens.Database
 	case "botPublicKey":
 		return tokens.BotPublicKey
+	case "database":
+		return tokens.Database
+	case "mongoUser":
+		return tokens.MongoUser
+	case "mongoPass":
+		return tokens.MongoPass
 	}
 	return invalidToken
+}
+
+func IsCmdsDeployable() bool {
+	err := LoadJSON("tokens.json", &tokens)
+	if err != nil {
+		return false
+	}
+	return tokens.DeployCommands
 }

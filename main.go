@@ -36,8 +36,13 @@ func main() {
 		panic(err)
 	}
 
-	if _, err := client.Rest().SetGlobalCommands(client.ApplicationID(), CommandsJSON()); err != nil {
-		log.Errorf("failed to set global commands: %v", err)
+	if loaders.IsCmdsDeployable() {
+		log.Infof("Commands deployment is enabled, deploying...")
+		if _, err := client.Rest().SetGlobalCommands(client.ApplicationID(), CommandsJSON()); err != nil {
+			log.Errorf("failed to set global commands: %v", err)
+		}
+	} else {
+		log.Infof("Commands deployment is disabled")
 	}
 
 	fmt.Printf("Client ready!\n")
