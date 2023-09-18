@@ -83,7 +83,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 		break
 	case "stats":
-		httpClient := &http.Client{Timeout: time.Second * 15}
+		httpClient := &http.Client{Timeout: time.Second * 2}
 		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
 
 		requ, err := http.NewRequest("GET", apiEndpoint, nil)
@@ -151,7 +151,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 				},
 			},
 		}); err != nil {
-			DumpErrToConsole(err)
+			DumpErrToInteraction(e, fmt.Errorf("Connection timed out while waiting for a response from the server."))
 		}
 		break
 	case "link":
