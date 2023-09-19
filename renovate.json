@@ -26,16 +26,5 @@
   "automergeSchedule": [
     "after 5am every day",
     "before 6pm every day"
-  ],
-  "updatePinnedDependencies": true,
-  "branchName": "{{{branchPrefix}}}{{{additionalBranchPrefix}}}{{{branchTopic}}}",
-  "packageRules": [
-    {
-      "matchDepNames": [
-        "^github.com/.*",
-        "^golang.org/.*",
-        "^go.mongodb.org/.*"
-      ]
-    }
   ]
 }
