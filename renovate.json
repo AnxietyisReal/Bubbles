@@ -18,9 +18,6 @@
   "constraints": {
     "go": "1.21"
   },
-  "fileMatch": [
-    "(^|/)go\\.mod$"
-  ],
   "pinDigests": true,
   "postUpdateOptions": [
     "gomodTidy"
