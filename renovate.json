@@ -27,10 +27,6 @@
   "automerge": true,
   "automergeType": "pr",
   "automergeStrategy": "squash",
-  "automergeSchedule": [
-    "after 5am every day",
-    "before 6pm every day"
-  ],
   "packageRules": [
     {
       "matchManagers": ["gomod"],
