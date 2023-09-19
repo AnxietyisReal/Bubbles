@@ -18,6 +18,13 @@
   "constraints": {
     "go": "1.21"
   },
+  "fileMatch": [
+    "(^|/)go\\.mod$"
+  ],
+  "pinDigests": true,
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "pruneStaleBranches": true,
   "pruneBranchAfterAutomerge": true,
   "automerge": true,
@@ -26,5 +33,12 @@
   "automergeSchedule": [
     "after 5am every day",
     "before 6pm every day"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": true
+    }
   ]
 }
