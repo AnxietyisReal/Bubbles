@@ -27,6 +27,9 @@
   "automerge": true,
   "automergeType": "pr",
   "automergeStrategy": "squash",
+  "automergeSchedule": [
+    "at any time"
+  ],
   "packageRules": [
     {
       "matchManagers": ["gomod"],
