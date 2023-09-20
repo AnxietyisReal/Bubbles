@@ -3,6 +3,7 @@ package botEvents
 import (
 	"bubbles/bot/loaders"
 	"bubbles/bot/structures"
+	"bubbles/bot/toolbox"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,7 +28,6 @@ var (
 )
 
 func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
-	// fmt.Printf("Command requested by %s\n", e.Member().User.Username)
 	TRUE := true
 	switch name := e.Data.CommandName(); name {
 	case "host-stats":
@@ -114,15 +114,10 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 
 		playerArray := string("")
-		for _, player := range res.Slots.Players {
-			if playerArray == "" && res.Slots.Used < 1 {
-				playerArray = "*No players online*"
-			}
-			if player.IsAdmin {
-				playerArray = fmt.Sprintf("%v\n%v **[ADMIN]**", playerArray, player.Name)
-			} else {
-				playerArray = fmt.Sprintf("%v\n%v", playerArray, player.Name)
-			}
+		if res.Slots.Used < 1 {
+			playerArray = "*No players online*"
+		} else {
+			playerArray = toolbox.GetPlayerInfo(res.Slots.Players)
 		}
 
 		if err := e.CreateMessage(discord.MessageCreate{
@@ -198,20 +193,6 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 	}
 }
-
-/* func AutocompleteListener(e *events.AutocompleteInteractionCreate) {
-	switch e.Data.CommandName {
-	case "stats":
-		if err := e.Result([]discord.AutocompleteChoice{
-			discord.AutocompleteChoiceString{
-				Name: "d",
-				Value: string("y"),
-			},
-		}); err != nil {
-			DumpErrToConsole(err)
-		}
-	}
-} */
 
 func DumpErrToConsole(err error) {
 	log.Errorf("failed to send interaction response: %v", err.Error())
