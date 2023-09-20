@@ -47,7 +47,7 @@ func main() {
 
 	fmt.Printf("Client ready!\n")
 	fmt.Printf("Running Disgo %v & Go %v\n", disgo.Version, strings.TrimPrefix(runtime.Version(), "go"))
-	client.Rest().CreateWebhookMessage(snowflake.ID(1152949381474029679), loaders.TokenLoader("webhook"), discord.WebhookMessageCreate{
+	client.Rest().CreateWebhookMessage(snowflake.MustParse(loaders.TokenLoader("hookId")), loaders.TokenLoader("hookToken"), discord.WebhookMessageCreate{
 		Content: "Container has been restarted.",
 	}, true, 0)
 

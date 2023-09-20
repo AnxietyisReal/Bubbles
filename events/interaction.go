@@ -139,12 +139,9 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 							Inline: &TRUE,
 						},
 						{
-							Name:  "Players",
+							Name:  fmt.Sprintf("Players - (%v/%v)", res.Slots.Used, res.Slots.Capacity),
 							Value: fmt.Sprintf("%v", playerArray),
 						},
-					},
-					Footer: &discord.EmbedFooter{
-						Text: fmt.Sprintf("%v/%v", res.Slots.Used, res.Slots.Capacity),
 					},
 					Color: mainEmbedColor,
 				},
@@ -161,6 +158,15 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			return
 		}
 		str, _ := e.SlashCommandInteractionData().OptString("panel-url")
+		if !strings.Contains(str, "dedicated-server-stats.xml") && !strings.Contains(str, "dedicated-server-stats.json") {
+			e.CreateMessage(discord.MessageCreate{
+				Content: "This is not a valid URL. Please try again.",
+			})
+			return
+		}
+		if strings.Contains(str, ".xml") {
+			str = strings.Replace(str, ".xml", ".json", -1)
+		}
 		doc := loaders.CreateSettings(*e.GuildID(), str)
 		if doc != nil {
 			log.Infof("Created server settings for %v", *e.GuildID())

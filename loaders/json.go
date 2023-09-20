@@ -9,7 +9,8 @@ import (
 type Tokens struct {
 	DeployCommands bool   `json:"deployCommands"`
 	Bot            string `json:"bot"`
-	Webhook        string `json:"webhook"`
+	HookID         string `json:"hookId"`
+	HookToken      string `json:"hookToken"`
 	BotPublicKey   string `json:"botPublicKey"`
 	Database       string `json:"database"`
 	MongoUser      string `json:"mongoUser"`
@@ -44,8 +45,10 @@ func TokenLoader(token string) string {
 	switch token {
 	case "bot":
 		return tokens.Bot
-	case "webhook":
-		return tokens.Webhook
+	case "hookId":
+		return tokens.HookID
+	case "hookToken":
+		return tokens.HookToken
 	case "botPublicKey":
 		return tokens.BotPublicKey
 	case "database":
