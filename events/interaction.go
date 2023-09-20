@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	mainEmbedColor = 0xf8add8
+	mainEmbedColor = 0x2f3136
 	noPermText     = "You need to have a role with `Manage Server` permission to use this command."
 )
 
@@ -86,7 +86,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		}
 		break
 	case "stats":
-		httpClient := &http.Client{Timeout: time.Second * 10}
+		httpClient := &http.Client{Timeout: time.Second * 5}
 		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
 
 		requ, err := http.NewRequest("GET", apiEndpoint, nil)
@@ -96,7 +96,8 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		requ.Header.Add("User-Agent", fmt.Sprintf("Bubbles/Go %v", strings.TrimPrefix(runtime.Version(), "go")))
 		r, err := httpClient.Do(requ)
 		if err != nil {
-			log.Error(err.Error())
+			DumpErrToChannel(e, fmt.Errorf("connection to the FS server failed"))
+			log.Errorf("failed to connect to the FS server: %v", err.Error())
 		}
 		defer r.Body.Close()
 		body, _ := io.ReadAll(r.Body)
@@ -149,7 +150,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 				},
 			},
 		}); err != nil {
-			DumpErrToInteraction(e, fmt.Errorf("Connection timed out while waiting for a response from the server."))
+			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
 		}
 		break
 	case "link":
@@ -191,6 +192,19 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 				Content: "I do not have an existing URL stored for this server.",
 			})
 		}
+		break
+	case "invite":
+		e.CreateMessage(discord.MessageCreate{
+			Components: []discord.ContainerComponent{
+				discord.ActionRowComponent{
+					discord.ButtonComponent{
+						Label: "Invite me!",
+						Style: discord.ButtonStyleLink,
+						URL:   fmt.Sprintf("https://discord.com/api/oauth2/authorize?client_id=%v&permissions=19456&scope=bot", e.Client().ApplicationID()),
+					},
+				},
+			},
+		})
 	}
 }
 
@@ -200,6 +214,20 @@ func DumpErrToConsole(err error) {
 
 func DumpErrToInteraction(e *events.ApplicationCommandInteractionCreate, err error) {
 	if err := e.CreateMessage(discord.MessageCreate{
+		Embeds: []discord.Embed{
+			{
+				Title:       "There was an attempt...",
+				Description: fmt.Sprintf("```%v```", err.Error()),
+				Color:       0x560000,
+			},
+		},
+	}); err != nil {
+		DumpErrToConsole(err)
+	}
+}
+
+func DumpErrToChannel(e *events.ApplicationCommandInteractionCreate, err error) {
+	if _, err := e.Client().Rest().CreateMessage(e.Channel().ID(), discord.MessageCreate{
 		Embeds: []discord.Embed{
 			{
 				Title:       "There was an attempt...",

@@ -48,6 +48,11 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 			Description:  "Unlink the FS server from the bot",
 			DMPermission: &FALSE,
 		},
+		discord.SlashCommandCreate{
+			Name:         "invite",
+			Description:  "Add the bot to your community server",
+			DMPermission: &FALSE,
+		},
 	}
 	return commandList
 }
