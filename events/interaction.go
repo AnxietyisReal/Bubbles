@@ -96,8 +96,8 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		requ.Header.Add("User-Agent", fmt.Sprintf("Bubbles/Go %v", strings.TrimPrefix(runtime.Version(), "go")))
 		r, err := httpClient.Do(requ)
 		if err != nil {
-			DumpErrToChannel(e, fmt.Errorf("connection to the FS server failed"))
-			log.Errorf("failed to connect to the FS server: %v", err.Error())
+			DumpErrToChannel(e, fmt.Errorf("connection to the server failed"))
+			log.Errorf("failed to connect to the server: %v", err.Error())
 		}
 		defer r.Body.Close()
 		body, _ := io.ReadAll(r.Body)
@@ -171,7 +171,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		if doc != nil {
 			log.Infof("Created server settings for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
-				Content: "I have stored the URL for this server.",
+				Content: "Successfully saved the URL.",
 			})
 		} else {
 			log.Infof("Server settings already exist for %v", *e.GuildID())
@@ -190,7 +190,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		if doc := loaders.DeleteSettings(*e.GuildID()); doc != nil {
 			log.Infof("Deleted server settings for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
-				Content: "I have deleted the URL for this server.",
+				Content: "Successfully deleted the URL.",
 			})
 		} else {
 			log.Infof("Server settings do not exist for %v", *e.GuildID())
