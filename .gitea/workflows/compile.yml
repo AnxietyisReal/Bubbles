@@ -1,4 +1,4 @@
-name: Compile the Discord bot
+name: Compile test
 on:
   push:
     branches:
