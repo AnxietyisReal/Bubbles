@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   build:
-    runs-on: alpine-3.18-go
+    runs-on: ubuntu-22.04-node
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
