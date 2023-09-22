@@ -173,11 +173,6 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			e.CreateMessage(discord.MessageCreate{
 				Content: "Successfully saved the URL.",
 			})
-		} else {
-			log.Infof("Server settings already exist for %v", *e.GuildID())
-			e.CreateMessage(discord.MessageCreate{
-				Content: "I already have an existing URL stored for this server.",
-			})
 		}
 		break
 	case "unlink":
@@ -191,11 +186,6 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			log.Infof("Deleted server settings for %v", *e.GuildID())
 			e.CreateMessage(discord.MessageCreate{
 				Content: "Successfully deleted the URL.",
-			})
-		} else {
-			log.Infof("Server settings do not exist for %v", *e.GuildID())
-			e.CreateMessage(discord.MessageCreate{
-				Content: "I do not have an existing URL stored for this server.",
 			})
 		}
 		break
