@@ -23,6 +23,7 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 			Name:         "stats",
 			Description:  "Returns the FS server information like players, etc",
 			DMPermission: &FALSE,
+			// TODO: Add support for multiple servers
 			/* Options: []discord.ApplicationCommandOption{
 				discord.ApplicationCommandOptionString{
 					Name:        "server",
@@ -52,6 +53,23 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 			Name:         "invite",
 			Description:  "Add the bot to your community server",
 			DMPermission: &FALSE,
+		}, // TODO: Come back to this later.
+		/* discord.SlashCommandCreate{
+			Name:         "mods",
+			Description:  "Returns a list of mods installed on the FS server",
+			DMPermission: &FALSE,
+		}, */
+		discord.SlashCommandCreate{
+			Name:         "fields",
+			Description:  "Returns a list of fields on the FS server",
+			DMPermission: &FALSE,
+			Options: []discord.ApplicationCommandOption{
+				discord.ApplicationCommandOptionBool{
+					Name:        "display-owned",
+					Description: "Only show owned fields",
+					Required:    false,
+				},
+			},
 		},
 	}
 	return commandList

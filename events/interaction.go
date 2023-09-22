@@ -85,25 +85,23 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			DumpErrToConsole(err)
 		}
 		break
+	case "invite":
+		e.CreateMessage(discord.MessageCreate{
+			Components: []discord.ContainerComponent{
+				discord.ActionRowComponent{
+					discord.ButtonComponent{
+						Label: "Invite me!",
+						Style: discord.ButtonStyleLink,
+						URL:   fmt.Sprintf("https://discord.com/api/oauth2/authorize?client_id=%v&permissions=19456&scope=bot", e.Client().ApplicationID()),
+					},
+				},
+			},
+		})
+		break
 	case "stats":
-		httpClient := &http.Client{Timeout: time.Second * 5}
-		apiEndpoint := loaders.RetrieveFSServerURL(*e.GuildID())
-
-		requ, err := http.NewRequest("GET", apiEndpoint, nil)
-		if err != nil {
-			log.Errorf("failed to parse the API data: %v", err.Error())
-		}
-		requ.Header.Add("User-Agent", fmt.Sprintf("Bubbles/Go %v", strings.TrimPrefix(runtime.Version(), "go")))
-		r, err := httpClient.Do(requ)
-		if err != nil {
-			DumpErrToChannel(e, fmt.Errorf("connection to the server failed"))
-			log.Errorf("failed to connect to the server: %v", err.Error())
-		}
-		defer r.Body.Close()
-		body, _ := io.ReadAll(r.Body)
-
-		var res structures.FSAPIRawDataResponse
-		json.Unmarshal(body, &res)
+		req := retrieveAPIContent(loaders.RetrieveFSServerURL(*e.GuildID()))
+		var res structures.FSAPIRawData_DSS
+		json.Unmarshal([]byte(req), &res)
 
 		if res.Server.Name == "" ||
 			res.Server.MapName == "" ||
@@ -189,18 +187,128 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			})
 		}
 		break
-	case "invite":
-		e.CreateMessage(discord.MessageCreate{
-			Components: []discord.ContainerComponent{
-				discord.ActionRowComponent{
-					discord.ButtonComponent{
-						Label: "Invite me!",
-						Style: discord.ButtonStyleLink,
-						URL:   fmt.Sprintf("https://discord.com/api/oauth2/authorize?client_id=%v&permissions=19456&scope=bot", e.Client().ApplicationID()),
+	case "fields":
+		req := retrieveAPIContent(loaders.RetrieveFSServerURL(*e.GuildID()))
+		var res structures.FSAPIRawData_DSS
+		json.Unmarshal([]byte(req), &res)
+
+		fieldId := string("")
+		fieldBool := string("")
+		fieldXZ := string("")
+		for _, field := range res.Fields {
+			fieldId += fmt.Sprintf("%v\n", field.ID)
+			fieldBool += fmt.Sprintf("%v\n", field.IsOwned)
+			fieldXZ += fmt.Sprintf("%v, %v\n", field.X, field.Z)
+		}
+
+		if len(res.Fields) < 1 {
+			fieldId = "-"
+			fieldBool = "No fields found on the server"
+			fieldXZ = "-"
+		} else if len(res.Fields) > 25 {
+			fieldId = "-"
+			fieldBool = "Too many fields to display here"
+			fieldXZ = "-"
+		}
+
+		fieldOwnedLen := 0
+		ownedFields, _ := e.SlashCommandInteractionData().OptBool("display-owned")
+		if ownedFields {
+			fieldId = string("")
+			fieldBool = string("")
+			fieldXZ = string("")
+			for _, field := range res.Fields {
+				if field.IsOwned {
+					fieldOwnedLen++
+					fieldId += fmt.Sprintf("%v\n", field.ID)
+					fieldBool += fmt.Sprintf("%v\n", field.IsOwned)
+					fieldXZ += fmt.Sprintf("%v, %v\n", field.X, field.Z)
+				}
+			}
+		}
+
+		titleStatus := fmt.Sprintf("There are %v fields on the server", len(res.Fields))
+		if ownedFields {
+			titleStatus = fmt.Sprintf("There are %v fields owned by farms on the server", fieldOwnedLen)
+		}
+		if err := e.CreateMessage(discord.MessageCreate{
+			Embeds: []discord.Embed{
+				{
+					Title: titleStatus,
+					Fields: []discord.EmbedField{
+						{
+							Name:   "#",
+							Value:  fmt.Sprintf("%v", fieldId),
+							Inline: &TRUE,
+						},
+						{
+							Name:   "Owned",
+							Value:  fmt.Sprintf("%v", fieldBool),
+							Inline: &TRUE,
+						},
+						{
+							Name:   "Coordinates (X,Z)",
+							Value:  fmt.Sprintf("%v", fieldXZ),
+							Inline: &TRUE,
+						},
 					},
+					Footer: &discord.EmbedFooter{
+						Text: "Server: " + res.Server.Name,
+					},
+					Color: mainEmbedColor,
 				},
 			},
-		})
+		}); err != nil {
+			DumpErrToInteraction(e, fmt.Errorf("could not send message: %v", err.Error()))
+			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
+		}
+		break
+		// TODO: Come back to this later and properly implement it. It's not a priority right now.
+		/* case "mods":
+		req := retrieveAPIContent(loaders.RetrieveFSServerURL(*e.GuildID()))
+		var res structures.FSAPIRawData_DSS
+		json.Unmarshal([]byte(req), &res)
+
+		modName := string("")
+		modAuthor := string("")
+		modVersion := string("")
+		for _, mod := range res.Mods {
+			modName += fmt.Sprintf("%v\n", mod.Description)
+			modAuthor += fmt.Sprintf("%v\n", mod.Author)
+			modVersion += fmt.Sprintf("%v\n", mod.Version)
+		}
+		if err := e.CreateMessage(discord.MessageCreate{
+			Embeds: []discord.Embed{
+				{
+					Title: fmt.Sprintf("There are %v mods installed on the server", len(res.Mods)),
+					Fields: []discord.EmbedField{
+						{
+							Name:   "Name",
+							Value:  fmt.Sprintf("%v", modName),
+							Inline: &TRUE,
+						},
+						{
+							Name:   "Author",
+							Value:  fmt.Sprintf("%v", modAuthor),
+							Inline: &TRUE,
+						},
+						{
+							Name:   "Version",
+							Value:  fmt.Sprintf("%v", modVersion),
+							Inline: &TRUE,
+						},
+					},
+					Footer: &discord.EmbedFooter{
+						Text: "Server: " + res.Server.Name,
+					},
+					Color: mainEmbedColor,
+				},
+			},
+		}); err != nil {
+			DumpErrToInteraction(e, fmt.Errorf("could not send message: %v", err.Error()))
+			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
+		}
+		break */
 	}
 }
 
@@ -243,4 +351,20 @@ func isGuildManager(e *events.ApplicationCommandInteractionCreate) bool {
 	} else {
 		return false
 	}
+}
+
+func retrieveAPIContent(url string) string {
+	httpClient := &http.Client{Timeout: time.Second * 5}
+	requ, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Errorf("failed to parse the API data: %v", err.Error())
+	}
+	requ.Header.Add("User-Agent", fmt.Sprintf("Bubbles/Go %v", strings.TrimPrefix(runtime.Version(), "go")))
+	r, err := httpClient.Do(requ)
+	if err != nil {
+		log.Errorf("failed to connect to the server: %v", err.Error())
+	}
+	defer r.Body.Close()
+	body, _ := io.ReadAll(r.Body)
+	return string(body)
 }

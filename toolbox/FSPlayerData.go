@@ -12,7 +12,7 @@ func formatUptime(uptime int) string {
 	return dur.String()
 }
 
-func GetPlayerInfo(playerArray []structures.FSAPI_PlayerArr) string {
+func GetPlayerInfo(playerArray []structures.DSS_PlayerArray) string {
 	var playerInfo string
 	for _, player := range playerArray {
 		adminStatus := ""
