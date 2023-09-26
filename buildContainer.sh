@@ -1,27 +1,24 @@
 #!/bin/bash
 # Builds the container image with optional push to the container registry.
 
-user=$1
-repo=$2
-tag=$3
-dir=$4
+tag=$1
 
-if [ "$user" == "" ] || [ "$repo" == "" ] || [ "$tag" == "" ] || [ "$dir" == "" ]; then
-    echo "Usage: buildContainer.sh <user> <repo> <tag> <dir>"
+if [ "$tag" == "" ]; then
+    echo "Usage: buildContainer.sh <tag>"
     exit 1
 fi
 
-echo "Building image $user/$repo:$tag from $dir"
+echo "Building image toast/bubbles:$tag from docker/bot/Dockerfile"
 
-docker build -t git.toast-server.net/$user/$repo:$tag -f $dir .
+docker build -t git.toast-server.net/toast/bubbles:$tag -f docker/bot/Dockerfile .
 echo "Image has been built"
 
-read -p "Do you want to push the image to the registry? (y/n) " -n 1 -r
+read -p "Do you want to push the image to the registry? (y|n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    docker push git.toast-server.net/$user/$repo:$tag
-    echo "Image has been pushed to the registry (https://git.toast-server.net/$user/-/packages/container/$repo/$tag)"
+    docker push git.toast-server.net/toast/bubbles:$tag
+    echo "Image has been pushed to the registry (https://git.toast-server.net/toast/-/packages/container/bubbles/$tag)"
 fi
 
 ###EOF###

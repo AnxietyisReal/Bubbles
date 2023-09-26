@@ -13,10 +13,3 @@ WORKDIR /home/bubbles
 COPY --from=builder /bubbles/bot ./
 EXPOSE 8080
 CMD ["./bot"]
-
-
-#FROM busybox:1.36 AS debugger
-
-#RUN mkdir /tmp/debug
-#COPY --from=builder ./ /tmp/debug
-# sudo docker run --rm -it git.toast-server.net/toast/bubbles:main find /tmp/debug/bubbles/ >> output.log

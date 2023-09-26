@@ -1,8 +1,11 @@
 package loaders
 
 import (
+	"bubbles/bot/toolbox"
 	"context"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/disgoorg/snowflake/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,44 +33,62 @@ func ConnectToDatabase(uri string) {
 	}
 }
 
-func CreateSettings(guildID snowflake.ID, panelUrl string) *mongo.InsertOneResult {
-	coll := client.Database(dbName).Collection("serverSettings")
-	result, err := coll.InsertOne(context.Background(), bson.D{{Key: "_id", Value: guildID}, {Key: "server", Value: panelUrl}})
-	if err != nil {
-		log.Fatalf("Failed to create server settings: %v", err)
-	}
-	return result
+type ServerSettings struct {
+	GuildID       snowflake.ID   `bson:"_id"`
+	LinkedServers map[int]string `bson:"linkedServers"`
 }
 
-/* func UpdateServerSettings(guildID snowflake.ID, settings bson.D) *mongo.UpdateResult {
-	coll := client.Database(dbName).Collection("serverSettings")
-	result, err := coll.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: guildID}}, bson.D{{Key: "$set", Value: bson.D{{Key: "linkedServers", Value: settings}}}})
-	if err != nil {
-		log.Fatalf("Failed to update server settings: %v", err)
-	}
-	return result
-} */
-
-func DeleteSettings(guildID snowflake.ID) *mongo.DeleteResult {
-	coll := client.Database(dbName).Collection("serverSettings")
-	result, err := coll.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: guildID}})
-	if err != nil {
-		log.Fatalf("Failed to delete server settings: %v", err)
-	}
-	return result
+func AddServer(guildID snowflake.ID, serverID int, serverURL string) (*mongo.UpdateResult, error) {
+	collection := client.Database(dbName).Collection("servers")
+	filter := bson.M{"_id": guildID}
+	update := bson.M{"$set": bson.M{"linkedServers." + strconv.Itoa(serverID): serverURL}}
+	opts := options.Update().SetUpsert(true)
+	return collection.UpdateOne(context.Background(), filter, update, opts)
 }
 
-func RetrieveFSServerURL(guildID snowflake.ID) string {
-	coll := client.Database(dbName).Collection("serverSettings")
-	var result bson.M
-	err := coll.FindOne(context.TODO(), bson.D{{Key: "_id", Value: guildID}}).Decode(&result)
+func DeleteServer(guildID snowflake.ID, serverID int) (*mongo.UpdateResult, error) {
+	collection := client.Database(dbName).Collection("servers")
+	filter := bson.M{"_id": guildID}
+	update := bson.M{"$unset": bson.M{"linkedServers." + strconv.Itoa(serverID): ""}}
+	return collection.UpdateOne(context.Background(), filter, update)
+}
+
+func UpdateServer(guildID snowflake.ID, serverID int, serverURL string) (*mongo.UpdateResult, error) {
+	collection := client.Database(dbName).Collection("servers")
+	server := ServerSettings{
+		GuildID:       guildID,
+		LinkedServers: map[int]string{serverID: serverURL},
+	}
+	return collection.UpdateOne(context.Background(), bson.M{"_id": guildID}, bson.M{"$set": server})
+}
+
+func GetServer(guildID snowflake.ID, serverID int) (string, error) {
+	collection := client.Database(dbName).Collection("servers")
+	var server ServerSettings
+	filter := bson.M{"_id": guildID}
+	err := collection.FindOne(context.Background(), filter).Decode(&server)
 	if err != nil {
-		log.Fatalf("Failed to retrieve FS server URL: %v", err)
+		return "", err
 	}
-	log.Printf("%v requested \"%v\"", guildID, result["server"].(string))
-	if result["server"] != nil {
-		return result["server"].(string)
-	} else {
-		return mongo.ErrNoDocuments.Error()
+	serverURL, ok := server.LinkedServers[serverID]
+	if !ok {
+		return "", fmt.Errorf("server ID %d not found for %s", serverID, toolbox.RESTGuild_Name(guildID, TokenLoader("bot")))
 	}
+	return serverURL, nil
+}
+
+func ListServersForThisGuild(guildID snowflake.ID) string {
+	collection := client.Database(dbName).Collection("servers")
+	var server ServerSettings
+	filter := bson.M{"_id": guildID}
+	err := collection.FindOne(context.Background(), filter).Decode(&server)
+	if err != nil {
+		return ""
+	}
+	var serverList string
+	for serverID := range server.LinkedServers {
+		serverList += fmt.Sprintf("%d\n", serverID)
+		fmt.Printf("Choosen ID: %v", serverList)
+	}
+	return serverList
 }

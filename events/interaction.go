@@ -50,7 +50,7 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		if err := e.CreateMessage(discord.MessageCreate{
 			Embeds: []discord.Embed{
 				{
-					Description: fmt.Sprintf("**OS:** %s", si.OS.Name),
+					Description: fmt.Sprintf("**OS:** %s\n**CPU:** %s", si.OS.Name, si.CPU.Model),
 					Fields: []discord.EmbedField{
 						{
 							Name:   "CPU Usage",
@@ -99,7 +99,13 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		})
 		break
 	case "stats":
-		req := retrieveAPIContent(loaders.RetrieveFSServerURL(*e.GuildID()))
+		serverId, _ := e.SlashCommandInteractionData().OptInt("server")
+		url, err := loaders.GetServer(*e.GuildID(), serverId)
+		if err != nil {
+			DumpErrToInteraction(e, err)
+			return
+		}
+		req := retrieveAPIContent(url)
 		var res structures.FSAPIRawData_DSS
 		json.Unmarshal([]byte(req), &res)
 
@@ -155,7 +161,8 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			})
 			return
 		}
-		str, _ := e.SlashCommandInteractionData().OptString("panel-url")
+		str, _ := e.SlashCommandInteractionData().OptString("server-url")
+		id, _ := e.SlashCommandInteractionData().OptInt("id")
 		if !strings.Contains(str, "dedicated-server-stats.xml") && !strings.Contains(str, "dedicated-server-stats.json") {
 			e.CreateMessage(discord.MessageCreate{
 				Content: "This is not a valid URL. Please try again.",
@@ -165,12 +172,20 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		if strings.Contains(str, ".xml") {
 			str = strings.Replace(str, ".xml", ".json", -1)
 		}
-		doc := loaders.CreateSettings(*e.GuildID(), str)
-		if doc != nil {
-			log.Infof("Created server settings for %v", *e.GuildID())
+		add, _ := loaders.AddServer(*e.GuildID(), id, str)
+		if add != nil {
+			log.Infof("Saved the server for %v, command performed by %v", toolbox.RESTGuild_Name(*e.GuildID(), loaders.TokenLoader("bot")), e.Member().User.Tag())
 			e.CreateMessage(discord.MessageCreate{
-				Content: "Successfully saved the URL.",
+				Content: "Saved successfully\nServer ID: `" + fmt.Sprint(id) + "`\nURL: `" + str + "`",
 			})
+		} else if add.UpsertedID != nil {
+			log.Infof("Updated the server for %v, command performed by %v", toolbox.RESTGuild_Name(*e.GuildID(), loaders.TokenLoader("bot")), e.Member().User.Tag())
+			e.CreateMessage(discord.MessageCreate{
+				Content: "Updated successfully\nServer ID: `" + fmt.Sprint(id) + "`\nURL: `" + str + "`",
+			})
+		} else {
+			DumpErrToInteraction(e, fmt.Errorf("failed to save the server"))
+			return
 		}
 		break
 	case "unlink":
@@ -180,15 +195,23 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			})
 			return
 		}
-		if doc := loaders.DeleteSettings(*e.GuildID()); doc != nil {
-			log.Infof("Deleted server settings for %v", *e.GuildID())
+		id, _ := e.SlashCommandInteractionData().OptInt("id")
+		doc, err := loaders.DeleteServer(*e.GuildID(), id)
+		if doc != nil {
+			log.Infof("Deleted the server for %v, command performed by %v", toolbox.RESTGuild_Name(*e.GuildID(), loaders.TokenLoader("bot")), e.Member().User.Tag())
 			e.CreateMessage(discord.MessageCreate{
-				Content: "Successfully deleted the URL.",
+				Content: "Deleted `" + fmt.Sprint(id) + "` successfully",
 			})
+		}
+		if err != nil {
+			DumpErrToInteraction(e, err)
+			return
 		}
 		break
 	case "fields":
-		req := retrieveAPIContent(loaders.RetrieveFSServerURL(*e.GuildID()))
+		id, _ := e.SlashCommandInteractionData().OptInt("id")
+		url, _ := loaders.GetServer(*e.GuildID(), id)
+		req := retrieveAPIContent(url)
 		var res structures.FSAPIRawData_DSS
 		json.Unmarshal([]byte(req), &res)
 
@@ -259,56 +282,9 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 				},
 			},
 		}); err != nil {
-			DumpErrToInteraction(e, fmt.Errorf("could not send message: %v", err.Error()))
 			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
 		}
 		break
-		// TODO: Come back to this later and properly implement it. It's not a priority right now.
-		/* case "mods":
-		req := retrieveAPIContent(loaders.RetrieveFSServerURL(*e.GuildID()))
-		var res structures.FSAPIRawData_DSS
-		json.Unmarshal([]byte(req), &res)
-
-		modName := string("")
-		modAuthor := string("")
-		modVersion := string("")
-		for _, mod := range res.Mods {
-			modName += fmt.Sprintf("%v\n", mod.Description)
-			modAuthor += fmt.Sprintf("%v\n", mod.Author)
-			modVersion += fmt.Sprintf("%v\n", mod.Version)
-		}
-		if err := e.CreateMessage(discord.MessageCreate{
-			Embeds: []discord.Embed{
-				{
-					Title: fmt.Sprintf("There are %v mods installed on the server", len(res.Mods)),
-					Fields: []discord.EmbedField{
-						{
-							Name:   "Name",
-							Value:  fmt.Sprintf("%v", modName),
-							Inline: &TRUE,
-						},
-						{
-							Name:   "Author",
-							Value:  fmt.Sprintf("%v", modAuthor),
-							Inline: &TRUE,
-						},
-						{
-							Name:   "Version",
-							Value:  fmt.Sprintf("%v", modVersion),
-							Inline: &TRUE,
-						},
-					},
-					Footer: &discord.EmbedFooter{
-						Text: "Server: " + res.Server.Name,
-					},
-					Color: mainEmbedColor,
-				},
-			},
-		}); err != nil {
-			DumpErrToInteraction(e, fmt.Errorf("could not send message: %v", err.Error()))
-			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
-		}
-		break */
 	}
 }
 
