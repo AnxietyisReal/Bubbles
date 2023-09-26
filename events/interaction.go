@@ -16,6 +16,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/log"
+	"github.com/disgoorg/snowflake/v2"
 	"github.com/dustin/go-humanize"
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -77,6 +78,9 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 							Value:  fmt.Sprintf("%v", runtime.NumGoroutine()),
 							Inline: &TRUE,
 						},
+					},
+					Footer: &discord.EmbedFooter{
+						Text: fmt.Sprintf("Uptime: %v", toolbox.GetUptime()),
 					},
 					Color: mainEmbedColor,
 				},
@@ -146,6 +150,9 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 							Name:  fmt.Sprintf("Players - (%v/%v)", res.Slots.Used, res.Slots.Capacity),
 							Value: fmt.Sprintf("%v", playerArray),
 						},
+					},
+					Footer: &discord.EmbedFooter{
+						Text: fmt.Sprintf("Server Time: %v", toolbox.FormatDaytime(res.Server.DayTime)),
 					},
 					Color: mainEmbedColor,
 				},
@@ -285,6 +292,44 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
 		}
 		break
+	case "database":
+		if !isBotDeveloper(e) {
+			e.CreateMessage(discord.MessageCreate{
+				Content: "Access denied.",
+			})
+			return
+		}
+		db := loaders.ListServersForThisGuild(*e.GuildID())
+		lines := strings.Split(db, "\n")
+		var (
+			fieldsList []discord.EmbedField
+			ServerID   string
+			ServerURL  string
+		)
+		for _, line := range lines {
+			if line == "" {
+				continue
+			}
+			fields := strings.Split(line, " ")
+			ServerID = fields[0]
+			ServerURL = fields[1]
+			fieldsList = append(fieldsList, discord.EmbedField{
+				Name:  fmt.Sprintf("ID: %v", ServerID),
+				Value: fmt.Sprintf("**URL:** %v", ServerURL),
+			})
+		}
+
+		if err := e.CreateMessage(discord.MessageCreate{
+			Embeds: []discord.Embed{
+				{
+					Title:  "Beep boop, here's the entries!",
+					Fields: fieldsList,
+					Color:  mainEmbedColor,
+				},
+			},
+		}); err != nil {
+			DumpErrToConsole(err)
+		}
 	}
 }
 
@@ -326,6 +371,17 @@ func isGuildManager(e *events.ApplicationCommandInteractionCreate) bool {
 		return true
 	} else {
 		return false
+	}
+}
+
+func isBotDeveloper(e *events.ApplicationCommandInteractionCreate) bool {
+	member := e.Member()
+	if member.User.ID != snowflake.ID(190407856527376384) {
+		log.Warnf("User \"%v\" tried to access the database!", member.User.Tag())
+		return false
+	} else {
+		log.Infof("User \"%v\" is my developer, access granted.", member.User.Tag())
+		return true
 	}
 }
 

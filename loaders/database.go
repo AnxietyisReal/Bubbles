@@ -86,9 +86,8 @@ func ListServersForThisGuild(guildID snowflake.ID) string {
 		return ""
 	}
 	var serverList string
-	for serverID := range server.LinkedServers {
-		serverList += fmt.Sprintf("%d\n", serverID)
-		fmt.Printf("Choosen ID: %v", serverList)
+	for serverID, serverURL := range server.LinkedServers {
+		serverList += fmt.Sprintf("%d %s\n", serverID, serverURL)
 	}
 	return serverList
 }

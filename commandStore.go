@@ -92,6 +92,11 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 				},
 			},
 		},
+		discord.SlashCommandCreate{
+			Name:         "database",
+			Description:  "[Developer] View the list of server IDs and their respective URLs for this guild",
+			DMPermission: &FALSE,
+		},
 	}
 	return commandList
 }
