@@ -10,7 +10,11 @@ import "github.com/disgoorg/disgo/discord"
 	they are in events/interaction.go
 */
 
-var FALSE = false
+var (
+	FALSE      = false
+	MinServers = 0
+	MaxServers = 18
+)
 
 func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 	commandList = []discord.ApplicationCommandCreate{
@@ -26,6 +30,8 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 				discord.ApplicationCommandOptionInt{
 					Name:        "server",
 					Description: "Server ID to get stats for",
+					MinValue:    &MinServers,
+					MaxValue:    &MaxServers,
 					Required:    true,
 				},
 			},
@@ -42,7 +48,9 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 				},
 				discord.ApplicationCommandOptionInt{
 					Name:        "id",
-					Description: "Server ID (Pick any number, it's just for identification)",
+					Description: "Server ID (Pick any number between 0-18, it's just for identification)",
+					MinValue:    &MinServers,
+					MaxValue:    &MaxServers,
 					Required:    true,
 				},
 			},
@@ -55,6 +63,8 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 				discord.ApplicationCommandOptionInt{
 					Name:        "id",
 					Description: "Server ID to be unlinked",
+					MinValue:    &MinServers,
+					MaxValue:    &MaxServers,
 					Required:    true,
 				},
 			},
@@ -71,6 +81,8 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 				discord.ApplicationCommandOptionInt{
 					Name:        "id",
 					Description: "Server ID to get fields data",
+					MinValue:    &MinServers,
+					MaxValue:    &MaxServers,
 					Required:    true,
 				},
 				discord.ApplicationCommandOptionBool{
