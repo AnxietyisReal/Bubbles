@@ -19,6 +19,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
     docker push git.toast-server.net/toast/bubbles:$tag
     echo "Image has been pushed to the registry (https://git.toast-server.net/toast/-/packages/container/bubbles/$tag)"
+    echo "Remoting into the server to pull the image"
+    bash -c "./deployContainer.sh"
 fi
 
 ###EOF###
