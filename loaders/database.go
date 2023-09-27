@@ -4,9 +4,9 @@ import (
 	"bubbles/bot/toolbox"
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 
+	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,7 +29,7 @@ func ConnectToDatabase(uri string) {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	} else {
-		log.Println("Connected to database")
+		log.Infof("Connected to database")
 	}
 }
 
@@ -71,6 +71,7 @@ func GetServer(guildID snowflake.ID, serverID int) (string, error) {
 		return "", err
 	}
 	serverURL, ok := server.LinkedServers[serverID]
+	log.Infof("%v requested \"%v\", ServerID: %v", toolbox.RESTGuild_Name(guildID, TokenLoader("bot")), serverURL, serverID)
 	if !ok {
 		return "", fmt.Errorf("server ID %d not found for %s", serverID, toolbox.RESTGuild_Name(guildID, TokenLoader("bot")))
 	}
