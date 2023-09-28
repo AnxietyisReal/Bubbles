@@ -3,7 +3,7 @@ module bubbles/bot
 go 1.21.1
 
 require (
-	github.com/disgoorg/disgo v0.16.9
+	github.com/disgoorg/disgo v0.16.10
 	github.com/disgoorg/log v1.2.1
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/dustin/go-humanize v1.0.1
