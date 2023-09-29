@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine3.18@sha256:d101f4e87fe92ad20b6df90420f6f5ab65bd8aeb185e5024350878c413e16699 AS builder
+FROM golang:1.21-alpine3.18@sha256:1c9cc949513477766da12bfa80541c4f24957323b0ee00630a6ff4ccf334b75b AS builder
 
 WORKDIR /bubbles
 COPY go.mod go.sum ./
