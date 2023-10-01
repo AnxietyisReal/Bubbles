@@ -2,7 +2,7 @@ version: '3.8'
 services:
   bot:
     container_name: Bubbles
-    image: 'git.toast-server.net/toast/bubbles:main@sha256:d5fa5f1acc1db2fec54026fc31846b640f7b5c9f6a6140f7c6c982680f419370'
+    image: 'git.toast-server.net/toast/bubbles:main@sha256:fee87009c2eadbef03b63bb9ccd8b18b219c4d8d78dff966c1119367084fcc61'
     volumes:
       - ../tokens.json:/home/bubbles/tokens.json:ro
     expose:
