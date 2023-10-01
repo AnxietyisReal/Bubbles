@@ -1,10 +1,8 @@
 name: Deploy to production
 on:
-  workflow_run:
-    workflows: [Build and push container image]
-    branches: [master]
-    types:
-      - completed
+  registry_package:
+    types: [published]
+    name: bubbles
 jobs:
   deploy:
     runs-on: ubuntu-22.04-node
