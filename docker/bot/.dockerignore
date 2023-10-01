@@ -1,6 +1,4 @@
 tokens.json
 renovate.json
 .gitignore
-buildContainer.sh
-deployContainer.sh
 .gitea/*
