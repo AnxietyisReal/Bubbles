@@ -8,7 +8,7 @@ require (
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/dustin/go-humanize v1.0.1
 	github.com/mackerelio/go-osstat v0.2.4
-	github.com/shirou/gopsutil/v3 v3.23.8
+	github.com/shirou/gopsutil/v3 v3.23.9
 	github.com/zcalusic/sysinfo v1.0.1
 	go.mongodb.org/mongo-driver v1.12.1
 )
