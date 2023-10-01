@@ -182,14 +182,18 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		add, _ := loaders.AddServer(*e.GuildID(), id, str)
 		if add != nil {
 			log.Infof("Saved the server for %v, command performed by %v", toolbox.RESTGuild_Name(*e.GuildID(), loaders.TokenLoader("bot")), e.Member().User.Tag())
-			e.CreateMessage(discord.MessageCreate{
-				Content: "Saved successfully\nServer ID: `" + fmt.Sprint(id) + "`\nURL: `" + str + "`",
-			})
+			e.CreateMessage(discord.NewMessageCreateBuilder().
+				SetContentf("Saved successfully\nServer ID: `" + fmt.Sprint(id) + "`\nURL: `" + str + "`").
+				SetEphemeral(true).
+				Build(),
+			)
 		} else if add.UpsertedID != nil {
 			log.Infof("Updated the server for %v, command performed by %v", toolbox.RESTGuild_Name(*e.GuildID(), loaders.TokenLoader("bot")), e.Member().User.Tag())
-			e.CreateMessage(discord.MessageCreate{
-				Content: "Updated successfully\nServer ID: `" + fmt.Sprint(id) + "`\nURL: `" + str + "`",
-			})
+			e.CreateMessage(discord.NewMessageCreateBuilder().
+				SetContentf("Updated successfully\nServer ID: `" + fmt.Sprint(id) + "`\nURL: `" + str + "`").
+				SetEphemeral(true).
+				Build(),
+			)
 		} else {
 			DumpErrToInteraction(e, fmt.Errorf("failed to save the server"))
 			return
@@ -206,90 +210,15 @@ func ListenForCommand(e *events.ApplicationCommandInteractionCreate) {
 		doc, err := loaders.DeleteServer(*e.GuildID(), id)
 		if doc != nil {
 			log.Infof("Deleted the server for %v, command performed by %v", toolbox.RESTGuild_Name(*e.GuildID(), loaders.TokenLoader("bot")), e.Member().User.Tag())
-			e.CreateMessage(discord.MessageCreate{
-				Content: "Deleted `" + fmt.Sprint(id) + "` successfully",
-			})
+			e.CreateMessage(discord.NewMessageCreateBuilder().
+				SetContentf("Deleted `" + fmt.Sprint(id) + "` successfully").
+				SetEphemeral(true).
+				Build(),
+			)
 		}
 		if err != nil {
 			DumpErrToInteraction(e, err)
 			return
-		}
-		break
-	case "fields":
-		id, _ := e.SlashCommandInteractionData().OptInt("id")
-		url, _ := loaders.GetServer(*e.GuildID(), id)
-		req := retrieveAPIContent(url)
-		var res structures.FSAPIRawData_DSS
-		json.Unmarshal([]byte(req), &res)
-
-		fieldId := string("")
-		fieldBool := string("")
-		fieldXZ := string("")
-		for _, field := range res.Fields {
-			fieldId += fmt.Sprintf("%v\n", field.ID)
-			fieldBool += fmt.Sprintf("%v\n", field.IsOwned)
-			fieldXZ += fmt.Sprintf("%v, %v\n", field.X, field.Z)
-		}
-
-		if len(res.Fields) < 1 {
-			fieldId = "-"
-			fieldBool = "No fields found on the server"
-			fieldXZ = "-"
-		} else if len(res.Fields) > 25 {
-			fieldId = "-"
-			fieldBool = "Too many fields to display here"
-			fieldXZ = "-"
-		}
-
-		fieldOwnedLen := 0
-		ownedFields, _ := e.SlashCommandInteractionData().OptBool("display-owned")
-		if ownedFields {
-			fieldId = string("")
-			fieldBool = string("")
-			fieldXZ = string("")
-			for _, field := range res.Fields {
-				if field.IsOwned {
-					fieldOwnedLen++
-					fieldId += fmt.Sprintf("%v\n", field.ID)
-					fieldBool += fmt.Sprintf("%v\n", field.IsOwned)
-					fieldXZ += fmt.Sprintf("%v, %v\n", field.X, field.Z)
-				}
-			}
-		}
-
-		titleStatus := fmt.Sprintf("There are %v fields on the server", len(res.Fields))
-		if ownedFields {
-			titleStatus = fmt.Sprintf("There are %v fields owned by farms on the server", fieldOwnedLen)
-		}
-		if err := e.CreateMessage(discord.MessageCreate{
-			Embeds: []discord.Embed{
-				{
-					Title: titleStatus,
-					Fields: []discord.EmbedField{
-						{
-							Name:   "#",
-							Value:  fmt.Sprintf("%v", fieldId),
-							Inline: &TRUE,
-						},
-						{
-							Name:   "Owned",
-							Value:  fmt.Sprintf("%v", fieldBool),
-							Inline: &TRUE,
-						},
-						{
-							Name:   "Coordinates (X,Z)",
-							Value:  fmt.Sprintf("%v", fieldXZ),
-							Inline: &TRUE,
-						},
-					},
-					Footer: &discord.EmbedFooter{
-						Text: "Server: " + res.Server.Name,
-					},
-					Color: mainEmbedColor,
-				},
-			},
-		}); err != nil {
-			DumpErrToConsole(fmt.Errorf("could not send message: %v", err.Error()))
 		}
 		break
 	case "database":

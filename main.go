@@ -38,7 +38,7 @@ func main() {
 
 	if loaders.IsCmdsDeployable() {
 		log.Infof("Commands deployment is enabled, deploying...")
-		if _, err := client.Rest().SetGlobalCommands(client.ApplicationID(), CommandsJSON()); err != nil {
+		if _, err := client.Rest().SetGlobalCommands(client.ApplicationID(), commandsJSON()); err != nil {
 			log.Errorf("failed to set global commands: %v", err)
 		}
 	} else {

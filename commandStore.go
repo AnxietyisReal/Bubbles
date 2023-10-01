@@ -1,6 +1,10 @@
 package main
 
-import "github.com/disgoorg/disgo/discord"
+import (
+	"fmt"
+
+	"github.com/disgoorg/disgo/discord"
+)
 
 /*
 	This file is used to store the commands for the bot
@@ -13,10 +17,10 @@ import "github.com/disgoorg/disgo/discord"
 var (
 	FALSE      = false
 	MinServers = 0
-	MaxServers = 18
+	MaxServers = 20
 )
 
-func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
+func commandsJSON() (commandList []discord.ApplicationCommandCreate) {
 	commandList = []discord.ApplicationCommandCreate{
 		discord.SlashCommandCreate{
 			Name:        "host-stats",
@@ -48,7 +52,7 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 				},
 				discord.ApplicationCommandOptionInt{
 					Name:        "id",
-					Description: "Server ID (Pick any number between 0-18, it's just for identification)",
+					Description: fmt.Sprintf("Server ID (Pick any number between %v-%v, it's just for identification)", MinServers, MaxServers),
 					MinValue:    &MinServers,
 					MaxValue:    &MaxServers,
 					Required:    true,
@@ -72,25 +76,6 @@ func CommandsJSON() (commandList []discord.ApplicationCommandCreate) {
 		discord.SlashCommandCreate{
 			Name:        "invite",
 			Description: "Add the bot to your community server",
-		},
-		discord.SlashCommandCreate{
-			Name:         "fields",
-			Description:  "Returns a list of fields on the FS server",
-			DMPermission: &FALSE,
-			Options: []discord.ApplicationCommandOption{
-				discord.ApplicationCommandOptionInt{
-					Name:        "id",
-					Description: "Server ID to get fields data",
-					MinValue:    &MinServers,
-					MaxValue:    &MaxServers,
-					Required:    true,
-				},
-				discord.ApplicationCommandOptionBool{
-					Name:        "display-owned",
-					Description: "Only show owned fields",
-					Required:    false,
-				},
-			},
 		},
 		discord.SlashCommandCreate{
 			Name:         "database",
