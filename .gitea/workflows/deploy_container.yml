@@ -2,7 +2,7 @@ name: Deploy to production
 on:
   registry_package:
     types: [published]
-    name: bubbles
+
 jobs:
   deploy:
     runs-on: ubuntu-22.04-node
