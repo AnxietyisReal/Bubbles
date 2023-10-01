@@ -18,4 +18,4 @@ jobs:
       - name: Install dependencies
         run: go mod download
       - name: Build
-        run: go build -v -trimpath ./
+        run: go build -trimpath ./
