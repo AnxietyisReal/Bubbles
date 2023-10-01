@@ -24,7 +24,7 @@
   ],
   "pruneStaleBranches": true,
   "pruneBranchAfterAutomerge": true,
-  "automerge": true,
+  "automerge": false,
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "automergeSchedule": [
@@ -35,6 +35,11 @@
       "matchManagers": ["gomod"],
       "matchDepTypes": ["indirect"],
       "enabled": true
+    },
+    {
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["pin", "digest"],
+      "enabled": false
     }
   ]
 }
