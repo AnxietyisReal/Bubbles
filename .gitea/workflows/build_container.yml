@@ -9,7 +9,6 @@ jobs:
     steps:
       - name: Setup Docker
         run: |
-          lsb_release -a
           apt-get update
           apt-get -y install apt-transport-https ca-certificates curl gnupg lsb-release
           curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
