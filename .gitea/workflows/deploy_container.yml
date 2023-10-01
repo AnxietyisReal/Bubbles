@@ -1,0 +1,25 @@
+name: Deploy to production
+on:
+  workflow_run:
+    workflows: ["Build and push container image"]
+    branches: [master]
+    types:
+      - completed
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04-node
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+      - name: SSH into Docker Host
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd Bubbles && \
+            docker compose pull && \
+            docker compose up -d --remove-orphans && \
+            docker image prune -f
