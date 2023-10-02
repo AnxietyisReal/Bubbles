@@ -8,6 +8,9 @@ import (
 )
 
 func formatUptime(uptime int) string {
+	if uptime == 0 {
+		return "just now"
+	}
 	dur := time.Duration(uptime) * time.Minute
 	return dur.String()
 }

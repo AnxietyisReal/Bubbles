@@ -2,3 +2,4 @@ tokens.json
 renovate.json
 .gitignore
 .gitea/*
+hosting_backup/*

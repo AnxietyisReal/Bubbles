@@ -2,3 +2,5 @@
 *.log
 # Exclude compiled binary
 bot
+# Exclude the backup folder
+hosting_backup
