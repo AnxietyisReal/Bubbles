@@ -9,7 +9,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/shirou/gopsutil/v3 v3.23.9
-	github.com/zcalusic/sysinfo v1.0.1
+	github.com/zcalusic/sysinfo v1.0.2
 	go.mongodb.org/mongo-driver v1.12.1
 )
 
@@ -17,6 +17,7 @@ require (
 	github.com/disgoorg/json v1.1.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/klauspost/compress v1.17.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20231016141302-07b5767bb0ed // indirect
