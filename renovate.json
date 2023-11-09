@@ -24,7 +24,7 @@
   ],
   "pruneStaleBranches": true,
   "pruneBranchAfterAutomerge": true,
-  "automerge": false,
+  "automerge": true,
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "automergeSchedule": [
