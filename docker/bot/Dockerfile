@@ -7,7 +7,7 @@ COPY . .
 RUN go build -v -trimpath ./
 
 
-FROM alpine:latest@sha256:69e0a8b6d2048be90290c992957a3cde2e87e955e5bb9c27d228c78c46c7840f AS runner
+FROM alpine:latest@sha256:34871e7290500828b39e22294660bee86d966bc0017544e848dd9a255cdf59e0 AS runner
 
 WORKDIR /home/bubbles
 COPY --from=builder /bubbles/bot ./
