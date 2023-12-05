@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	mainEmbedColor = 0xff69b4 //0x2f3136
+	mainEmbedColor = 0x2f3136
 	noPermText     = "You need to have a role with `Manage Server` permission to use this command."
 )
 
