@@ -10,7 +10,7 @@ require (
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/shirou/gopsutil/v3 v3.23.11
 	github.com/zcalusic/sysinfo v1.0.2
-	go.mongodb.org/mongo-driver v1.13.0
+	go.mongodb.org/mongo-driver v1.13.1
 )
 
 require (
